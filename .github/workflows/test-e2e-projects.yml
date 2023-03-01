@@ -6,12 +6,12 @@ on: [deployment_status]
 jobs:
   test-e2e-project-1:
     name: Test Project 1
-    uses: .github/workflows/test-e2e-reusable.yml
+    uses: ./.github/workflows/test-e2e-reusable.yml
     if: contains(github.event.deployment_status.environment_url, 'checkly-vercel-multi-project-repro-1')
     secrets: inherit
   test-e2e-project-2:
     name: Test Project 2
-    uses: .github/workflows/test-e2e-reusable.yml
+    uses: ./.github/workflows/test-e2e-reusable.yml
     if: contains(github.event.deployment_status.environment_url, 'checkly-vercel-multi-project-repro-2')
     secrets: inherit
 
