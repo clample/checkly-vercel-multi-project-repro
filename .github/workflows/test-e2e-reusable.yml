@@ -1,8 +1,14 @@
 on: 
   workflow_call:
+    inputs:
+      environment_url:
+        required: true
+        type: string
     secrets:
-      CHECKLY_API_KEY: ${{ secrets.CHECKLY_API_KEY }}
-      CHECKLY_ACCOUNT_ID: ${{ secrets.CHECKLY_ACCOUNT_ID }}
+      CHECKLY_API_KEY:
+        required: true
+      CHECKLY_ACCOUNT_ID:
+        required: true
 
 jobs:
   test-e2e:
@@ -25,7 +31,7 @@ jobs:
         run: npm ci
       - name: Run checks
         id: run-checks
-        run: npm run checkly:test -- -e ENVIRONMENT_URL=${{ github.event.deployment_status.environment_url }}
+        run: npm run checkly:test -- -e ENVIRONMENT_URL=${{ inputs.environment_url }}
         env:
           CHECKLY_API_KEY: ${{ secrets.CHECKLY_API_KEY }}
           CHECKLY_ACCOUNT_ID: ${{ secrets.CHECKLY_API_KEY }}

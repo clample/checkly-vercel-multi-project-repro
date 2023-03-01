@@ -8,11 +8,15 @@ jobs:
     name: Test Project 1
     uses: ./.github/workflows/test-e2e-reusable.yml
     if: contains(github.event.deployment_status.environment_url, 'checkly-vercel-multi-project-repro-1')
+    with:
+      environment_url: ${{ github.event.deployment_status.environment_url }}
     secrets: inherit
   test-e2e-project-2:
     name: Test Project 2
     uses: ./.github/workflows/test-e2e-reusable.yml
     if: contains(github.event.deployment_status.environment_url, 'checkly-vercel-multi-project-repro-2')
+    with:
+      environment_url: ${{ github.event.deployment_status.environment_url }}
     secrets: inherit
 
   # This additional jobs are needed for branch protection rules.
@@ -22,13 +26,20 @@ jobs:
   test-e2e-project-1-passed:
     name: Test Project 1 Passed
     needs: [test-e2e-project-1]
+    if: ${{ success() || failure() }}
     runs-on: ubuntu-latest
     steps:
+      # Fail if test-e2e-project-1 wasn't successful
+      - run: exit 1
+        if: contains(fromJson('["success"]'), needs.test-e2e-project1.result) == false
       - run: echo "passed"
 
   test-e2e-project-2-passed:
     name: Test Project 2 Passed
     needs: [test-e2e-project-2]
+    if: ${{ success() || failure() }}
     runs-on: ubuntu-latest
     steps:
+      - run: exit 1
+        if: contains(fromJson('["success"]'), needs.test-e2e-project-2.result) == false
       - run: echo "passed"
