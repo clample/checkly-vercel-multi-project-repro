@@ -1,0 +1,40 @@
+name: Test Projects
+# This workflow will actually be triggered twice per commit.
+# It will be triggered once when "checkly-vercel-multi-repro-1" is deployed, and again when "repro-2" is deployed.
+on: [deployment_status]
+
+jobs:
+  test-e2e-project-1:
+    name: Test Project 1
+    uses: .github/workflows/test-e2e-reusable.yml
+    if: contains(github.event.deployment_status.environment_url, 'checkly-vercel-multi-project-repro-1')
+    secrets: inherit
+  test-e2e-project-2:
+    name: Test Project 2
+    uses: .github/workflows/test-e2e-reusable.yml
+    if: contains(github.event.deployment_status.environment_url, 'checkly-vercel-multi-project-repro-2')
+    secrets: inherit
+
+  # This additional jobs are needed for branch protection rules.
+  # The job will pass if the Test Project actually runs successfully. 
+  # If test-e2e-project-1 is skipped or fails, it will wait in the pending state.
+  # https://docs.github.com/en/enterprise-cloud@latest/repositories/configuring-branches-and-merges-in-your-repository/defining-the-mergeability-of-pull-requests/troubleshooting-required-status-checks#handling-skipped-but-required-checks
+  test-e2e-project-1-passed:
+    name: Test Project 1 Passed
+    if: success() || failure() 
+    needs: [test-e2e-project-1]
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1
+        if: contains(fromJson('["success"]'), needs.test-e2e-project-1) == false
+      - run: echo "passed"
+
+  test-e2e-project-2-passed:
+    name: Test Project 2 Passed
+    needs: [test-e2e-project-2]
+    if: success() || failure() 
+    runs-on: ubuntu-latest
+    steps:
+      - run: exit 1
+        if: contains(fromJson('["success"]'), needs.test-e2e-project-2) == false
+      - run: echo "passed"
